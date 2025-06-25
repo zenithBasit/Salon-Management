@@ -17,7 +17,7 @@ const CustomerManagement = () => {
     setShowForm(true);
   };
 
-  const handleEditCustomer = (customer: any) => {
+  const handleEditCustomer = (customer: unknown) => {
     setEditingCustomer(customer);
     setShowForm(true);
   };

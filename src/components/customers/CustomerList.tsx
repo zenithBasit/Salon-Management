@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface CustomerListProps {
   searchTerm: string;
-  onEditCustomer: (customer: any) => void;
+  onEditCustomer: (customer: unknown) => void;
 }
 
 const CustomerList = ({ searchTerm, onEditCustomer }: CustomerListProps) => {

@@ -1,48 +1,64 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Users,
+  DollarSign,
+  FileText,
+  TrendingUp,
+  Calendar,
+  Gift,
+} from "lucide-react"
+import StatsCard from "./StatsCard"
+import RecentActivity from "./RecentActivity"
+import UpcomingReminders from "./UpcomingReminders"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, DollarSign, FileText, TrendingUp, Calendar, Gift } from "lucide-react";
-import StatsCard from "./StatsCard";
-import RecentActivity from "./RecentActivity";
-import UpcomingReminders from "./UpcomingReminders";
+import { StatsCardProps } from "./StatsCard"
 
 const Dashboard = () => {
-  const stats = [
+  const stats: StatsCardProps[] = [
     {
       title: "Total Customers",
       value: "1,234",
       change: "+12%",
       icon: Users,
-      trend: "up"
+      trend: "up",
     },
     {
       title: "Monthly Revenue",
       value: "$15,640",
       change: "+8%",
       icon: DollarSign,
-      trend: "up"
+      trend: "up",
     },
     {
       title: "Total Invoices",
       value: "856",
       change: "+18%",
       icon: FileText,
-      trend: "up"
+      trend: "up",
     },
     {
       title: "Growth Rate",
       value: "23.5%",
       change: "+5%",
       icon: TrendingUp,
-      trend: "up"
-    }
-  ];
+      trend: "up",
+    },
+  ]
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's what's happening at your salon.</p>
+        <p className="text-gray-600">
+          Welcome back! Here's what's happening at your salon.
+        </p>
       </div>
 
       {/* Stats Grid */}
@@ -107,7 +123,7 @@ const Dashboard = () => {
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard

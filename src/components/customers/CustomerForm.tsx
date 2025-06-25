@@ -8,8 +8,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Save, User, Mail, Phone, Gift, Heart } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
+interface Customer {
+  name: string;
+  email?: string;
+  phone?: string;
+  birthday?: string;
+  anniversary?: string;
+  address?: string;
+  notes?: string;
+}
+
 interface CustomerFormProps {
-  customer?: any;
+  customer?: Customer;
   onClose: () => void;
 }
 

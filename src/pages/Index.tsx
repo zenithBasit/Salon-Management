@@ -1,12 +1,12 @@
 
 import { useState } from "react";
-import Sidebar from "@/components/layout/Sidebar";
-import Dashboard from "@/components/dashboard/Dashboard";
-import CustomerManagement from "@/components/customers/CustomerManagement";
-import InvoiceManagement from "@/components/invoices/InvoiceManagement";
-import Analytics from "@/components/analytics/Analytics";
-import Profile from "@/components/profile/Profile";
-import AuthForm from "@/components/auth/AuthForm";
+import Sidebar from "../components/layout/Sidebar";
+import Dashboard from "../components/dashboard/Dashboard";
+import CustomerManagement from "../components/customers/CustomerManagement";
+import InvoiceManagement from "../components/invoices/InvoiceManagement";
+import Analytics from "../components/analytics/Analytics";
+import Profile from "../components/profile/Profile";
+import AuthForm from "../components/auth/AuthForm";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
