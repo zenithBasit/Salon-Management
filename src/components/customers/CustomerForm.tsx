@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,12 +25,11 @@ interface CustomerFormProps {
 const CustomerForm = ({ customer, onClose }: CustomerFormProps) => {
   const [formData, setFormData] = useState({
     name: customer?.name || "",
-    email: customer?.email || "",
     phone: customer?.phone || "",
+    email: customer?.email || "",
     birthday: customer?.birthday || "",
     anniversary: customer?.anniversary || "",
-    address: customer?.address || "",
-    notes: customer?.notes || ""
+    notes: customer?.notes || "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,10 +41,6 @@ const CustomerForm = ({ customer, onClose }: CustomerFormProps) => {
         "New customer has been added to the system.",
     });
     onClose();
-  };
-
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -63,111 +57,65 @@ const CustomerForm = ({ customer, onClose }: CustomerFormProps) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                    placeholder="Enter customer name"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number *</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleChange("phone", e.target.value)}
-                      placeholder="+1 (555) 123-4567"
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                    placeholder="customer@email.com"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => handleChange("address", e.target.value)}
-                  placeholder="Enter customer address"
-                  rows={2}
+                <Label htmlFor="name">Full Name *</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  required
                 />
               </div>
-            </div>
-
-            {/* Special Dates */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Special Dates</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="birthday" className="flex items-center space-x-2">
-                    <Gift className="h-4 w-4 text-pink-600" />
-                    <span>Birthday</span>
-                  </Label>
-                  <Input
-                    id="birthday"
-                    type="date"
-                    value={formData.birthday}
-                    onChange={(e) => handleChange("birthday", e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="anniversary" className="flex items-center space-x-2">
-                    <Heart className="h-4 w-4 text-red-600" />
-                    <span>Anniversary</span>
-                  </Label>
-                  <Input
-                    id="anniversary"
-                    type="date"
-                    value={formData.anniversary}
-                    onChange={(e) => handleChange("anniversary", e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Additional Notes</h3>
-              
               <div className="space-y-2">
+                <Label htmlFor="phone">Phone *</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="birthday">Birthday</Label>
+                <Input
+                  id="birthday"
+                  name="birthday"
+                  type="date"
+                  value={formData.birthday}
+                  onChange={e => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="anniversary">Anniversary</Label>
+                <Input
+                  id="anniversary"
+                  name="anniversary"
+                  type="date"
+                  value={formData.anniversary}
+                  onChange={e => setFormData(prev => ({ ...prev, anniversary: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="notes">Notes</Label>
-                <Textarea
+                <Input
                   id="notes"
+                  name="notes"
                   value={formData.notes}
-                  onChange={(e) => handleChange("notes", e.target.value)}
-                  placeholder="Preferences, allergies, special requests..."
-                  rows={3}
+                  onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 />
               </div>
             </div>

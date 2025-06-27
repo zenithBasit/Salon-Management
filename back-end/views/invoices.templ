@@ -1,0 +1,145 @@
+// views/invoices.templ
+package views
+ 
+
+
+import "fmt"
+
+type Service struct {
+    ID    int
+    Name  string
+    Price float64
+}
+
+type Customer struct {
+    ID   int
+    Name string
+}
+
+type InvoiceListItem struct {
+    ID           int
+    CustomerName string
+    Date         string
+    Total        float64
+    Status       string
+}
+
+
+type InvoiceListItem struct {
+    ID           int
+    CustomerName string
+    Date         string
+    Total        float64
+    Status       string
+}
+
+templ InvoicesPage(invoices []InvoiceListItem) {
+    @Layout("Invoices") {
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Invoice History</h1>
+            <a href="/invoices/new" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-plus mr-2"></i>Create New Invoice
+            </a>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b">
+                        <th class="p-2">Invoice #</th>
+                        <th class="p-2">Customer</th>
+                        <th class="p-2">Date</th>
+                        <th class="p-2">Amount</th>
+                        <th class="p-2">Status</th>
+                        <th class="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    for _, inv := range invoices {
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-2">INV-{ fmt.Sprintf("%04d", inv.ID) }</td>
+                            <td class="p-2">{ inv.CustomerName }</td>
+                            <td class="p-2">{ inv.Date }</td>
+                            <td class="p-2">₹{ fmt.Sprintf("%.2f", inv.Total) }</td>
+                            <td class="p-2">
+                                if inv.Status == "Paid" {
+                                    <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">{ inv.Status }</span>
+                                } else {
+                                     <span class="bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">{ inv.Status }</span>
+                                }
+                            </td>
+                            <td class="p-2">
+                                <a href={ templ.URL(fmt.Sprintf("/invoices/%d", inv.ID)) } class="text-blue-500 hover:text-blue-700">View</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+templ NewInvoicePage(customers []Customer, services []Service) {
+    @Layout("New Invoice") {
+        <h1 class="text-3xl font-bold mb-6">Create New Invoice</h1>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <form hx-post="/invoices">
+                <div class="mb-4">
+                    <label class="block text-gray-700">Customer</label>
+                    <select name="customer_id" class="p-2 border rounded w-full" required>
+                        for _, c := range customers {
+                            <option value={fmt.Sprint(c.ID)}>{c.Name} ({c.ID})</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Services</label>
+                    <select name="service_ids" multiple class="p-2 border rounded w-full" required>
+                        for _, s := range services {
+                            <option value={fmt.Sprint(s.ID)}>{s.Name} - ₹{s.Price}</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Discount (%)</label>
+                    <input type="number" name="discount" min="0" max="100" value="0" class="p-2 border rounded w-full"/>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Tax (%)</label>
+                    <input type="number" name="tax" min="0" max="100" value="0" class="p-2 border rounded w-full"/>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Payment Status</label>
+                    <select name="payment_status" class="p-2 border rounded w-full">
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="Paid">Paid</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Create Invoice</button>
+            </form>
+        </div>
+    }
+}
+
+templ InvoiceDetailPage(inv InvoiceListItem) {
+    @Layout("Invoice Details") {
+        <h1 class="text-3xl font-bold mb-6">Invoice Details</h1>
+        <div class="bg-white p-6 rounded-lg shadow-md max-w-xl">
+            <div class="mb-4">
+                <span class="font-semibold">Invoice #:</span> INV-{ fmt.Sprintf("%04d", inv.ID) }
+            </div>
+            <div class="mb-4">
+                <span class="font-semibold">Customer:</span> { inv.CustomerName }
+            </div>
+            <div class="mb-4">
+                <span class="font-semibold">Date:</span> { inv.Date }
+            </div>
+            <div class="mb-4">
+                <span class="font-semibold">Total Amount:</span> ₹{ fmt.Sprintf("%.2f", inv.Total) }
+            </div>
+            <div class="mb-4">
+                <span class="font-semibold">Status:</span> { inv.Status }
+            </div>
+            <a href="/invoices" class="text-blue-500 hover:underline">Back to Invoices</a>
+        </div>
+    }
+}

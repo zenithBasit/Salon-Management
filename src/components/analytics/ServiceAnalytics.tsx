@@ -1,16 +1,23 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Scissors } from "lucide-react";
+import { useEffect, useState } from "react";
+
+interface ServiceData {
+  name: string;
+  value: number;
+  revenue: number;
+  color: string;
+}
 
 const ServiceAnalytics = () => {
-  const serviceData = [
-    { name: "Hair Cut & Style", value: 35, revenue: 8750, color: "#7c3aed" },
-    { name: "Hair Color", value: 25, revenue: 6250, color: "#3b82f6" },
-    { name: "Facial Treatment", value: 20, revenue: 4000, color: "#10b981" },
-    { name: "Manicure & Pedicure", value: 12, revenue: 2400, color: "#f59e0b" },
-    { name: "Massage", value: 8, revenue: 1600, color: "#ef4444" }
-  ];
+  const [serviceData, setServiceData] = useState<ServiceData[]>([]);
+
+  useEffect(() => {
+    fetch("http://localhost:4000/api/service-analytics")
+      .then(res => res.json())
+      .then(setServiceData);
+  }, []);
 
   const totalRevenue = serviceData.reduce((sum, item) => sum + item.revenue, 0);
 

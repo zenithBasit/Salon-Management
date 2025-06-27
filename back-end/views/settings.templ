@@ -1,0 +1,43 @@
+package views
+ 
+type ReminderTemplate struct {
+    ID        int
+    OwnerID   int
+    EventType string
+    Template  string
+}
+
+templ SettingsPage(reminderTemplate string) {
+    @Layout("Settings") {
+         <h1 class="text-3xl font-bold mb-6">Settings</h1>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-2">Automated Reminder Message</h2>
+            <p class="text-sm text-gray-500 mb-4">Customize the message sent for birthdays and anniversaries. Use placeholders like [CustomerName], [SalonName], and [Event].</p>
+            <form hx-post="/settings/reminders" hx-target="#save-confirm" hx-swap="innerHTML">
+                <textarea name="reminder_template" class="w-full p-2 border rounded h-32">{ reminderTemplate }</textarea>
+                <button type="submit" class="mt-4 bg-blue-500 text-white font-bold py-2 px-4 rounded">Save Template</button>
+                <div id="save-confirm"></div>
+            </form>
+        </div>
+    }
+}
+
+templ ReminderTemplatesPage(templates []ReminderTemplate) {
+    @Layout("Settings") {
+        <h2 class="text-xl font-semibold mb-4">Reminder Templates</h2>
+        <form hx-post="/settings/templates" class="mb-4">
+            <select name="event_type" class="p-2 border rounded w-full mb-2">
+                <option value="birthday">Birthday</option>
+                <option value="anniversary">Anniversary</option>
+                <option value="custom">Custom</option>
+            </select>
+            <textarea name="template" required class="p-2 border rounded w-full mb-2"></textarea>
+            <button type="submit" class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Save Template</button>
+        </form>
+        <ul>
+            for _, t := range templates {
+                <li class="mb-2"><span class="font-semibold">{t.EventType}:</span> {t.Template}</li>
+            }
+        </ul>
+    }
+}

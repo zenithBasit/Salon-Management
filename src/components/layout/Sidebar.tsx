@@ -1,4 +1,4 @@
-
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
@@ -11,18 +11,14 @@ import {
   LogOut
 } from "lucide-react";
 
-interface SidebarProps {
-  currentView: string;
-  onViewChange: (view: string) => void;
-}
-
-const Sidebar = ({ currentView, onViewChange }: SidebarProps) => {
+const Sidebar = () => {
+  const location = useLocation();
   const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "customers", label: "Customers", icon: Users },
-    { id: "invoices", label: "Invoices", icon: FileText },
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
-    { id: "profile", label: "Profile", icon: Settings },
+    { id: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "/customers", label: "Customers", icon: Users },
+    { id: "/invoices", label: "Invoices", icon: FileText },
+    { id: "/analytics", label: "Analytics", icon: BarChart3 },
+    { id: "/profile", label: "Profile", icon: Settings },
   ];
 
   return (
@@ -40,18 +36,18 @@ const Sidebar = ({ currentView, onViewChange }: SidebarProps) => {
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
-            <Button
-              key={item.id}
-              variant={currentView === item.id ? "default" : "ghost"}
-              className={cn(
-                "w-full justify-start space-x-2",
-                currentView === item.id && "bg-purple-600 text-white hover:bg-purple-700"
-              )}
-              onClick={() => onViewChange(item.id)}
-            >
-              <Icon className="h-4 w-4" />
-              <span>{item.label}</span>
-            </Button>
+            <Link to={item.id} key={item.id}>
+              <Button
+                variant={location.pathname === item.id ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start space-x-2",
+                  location.pathname === item.id && "bg-purple-600 text-white hover:bg-purple-700"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </Button>
+            </Link>
           );
         })}
       </nav>

@@ -16,40 +16,80 @@ import {
 import StatsCard from "./StatsCard"
 import RecentActivity from "./RecentActivity"
 import UpcomingReminders from "./UpcomingReminders"
+import { useEffect, useState } from "react"
 
 import { StatsCardProps } from "./StatsCard"
 
 const Dashboard = () => {
-  const stats: StatsCardProps[] = [
-    {
-      title: "Total Customers",
-      value: "1,234",
-      change: "+12%",
-      icon: Users,
-      trend: "up",
-    },
-    {
-      title: "Monthly Revenue",
-      value: "$15,640",
-      change: "+8%",
-      icon: DollarSign,
-      trend: "up",
-    },
-    {
-      title: "Total Invoices",
-      value: "856",
-      change: "+18%",
-      icon: FileText,
-      trend: "up",
-    },
-    {
-      title: "Growth Rate",
-      value: "23.5%",
-      change: "+5%",
-      icon: TrendingUp,
-      trend: "up",
-    },
-  ]
+  const [stats, setStats] = useState<StatsCardProps[]>(
+    [
+      {
+        title: "Total Customers",
+        value: "-",
+        change: "",
+        icon: Users,
+        trend: "up",
+      },
+      {
+        title: "Monthly Revenue",
+        value: "-",
+        change: "",
+        icon: DollarSign,
+        trend: "up",
+      },
+      {
+        title: "Total Invoices",
+        value: "-",
+        change: "",
+        icon: FileText,
+        trend: "up",
+      },
+      {
+        title: "Growth Rate",
+        value: "-",
+        change: "",
+        icon: TrendingUp,
+        trend: "up",
+      },
+    ]
+  )
+
+  useEffect(() => {
+    fetch("http://localhost:4000/api/dashboard")
+      .then((res) => res.json())
+      .then((data) => {
+        setStats([
+          {
+            title: "Total Customers",
+            value: data.totalCustomers,
+            change: "+12%",
+            icon: Users,
+            trend: "up",
+          },
+          {
+            title: "Monthly Revenue",
+            value: `$${data.monthlyRevenue}`,
+            change: "+8%",
+            icon: DollarSign,
+            trend: "up",
+          },
+          {
+            title: "Total Invoices",
+            value: data.totalInvoices,
+            change: "+18%",
+            icon: FileText,
+            trend: "up",
+          },
+          {
+            title: "Growth Rate",
+            value: data.growthRate,
+            change: "+5%",
+            icon: TrendingUp,
+            trend: "up",
+          },
+        ])
+      })
+  }, [])
 
   return (
     <div className="p-6 space-y-6">

@@ -1,4 +1,4 @@
-
+import type { Customer } from "./CustomerList";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,14 +10,14 @@ import CustomerForm from "./CustomerForm";
 const CustomerManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
 
   const handleAddCustomer = () => {
     setEditingCustomer(null);
     setShowForm(true);
   };
 
-  const handleEditCustomer = (customer: unknown) => {
+  const handleEditCustomer = (customer: Customer) => {
     setEditingCustomer(customer);
     setShowForm(true);
   };

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,8 +7,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { X, Save, Plus, Trash2, User, Calendar } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
+interface Service {
+  name: string;
+  price: number;
+}
+
+interface Invoice {
+  customerName: string;
+  customerPhone: string;
+  date: string;
+  dueDate: string;
+  status: string;
+  services: Service[];
+  discount: number;
+  taxRate: number;
+}
+
 interface InvoiceFormProps {
-  invoice?: any;
+  invoice?: Invoice;
   onClose: () => void;
 }
 
@@ -25,15 +40,32 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
     taxRate: invoice?.taxRate || 8
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: invoice ? "Invoice updated" : "Invoice created",
-      description: invoice ? 
-        "Invoice has been updated successfully." : 
-        "New invoice has been created.",
+    const invoiceData = {
+      ...formData,
+      total_amount: total
+    };
+    const response = await fetch('http://localhost:4000/api/invoices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(invoiceData)
     });
-    onClose();
+    if (response.ok) {
+      toast({
+        title: invoice ? "Invoice updated" : "Invoice created",
+        description: invoice
+          ? "Invoice has been updated successfully."
+          : "New invoice has been created.",
+      });
+      onClose();
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to save invoice.",
+        variant: "destructive"
+      });
+    }
   };
 
   const addService = () => {
@@ -50,7 +82,7 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
     }));
   };
 
-  const updateService = (index: number, field: string, value: any) => {
+  const updateService = (index: number, field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       services: prev.services.map((service, i) => 
@@ -85,6 +117,7 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
                 <Label htmlFor="customerName">Customer Name *</Label>
                 <Input
                   id="customerName"
+                  name="customerName"
                   value={formData.customerName}
                   onChange={(e) => setFormData(prev => ({ ...prev, customerName: e.target.value }))}
                   placeholder="Enter customer name"
@@ -96,6 +129,7 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
                 <Label htmlFor="customerPhone">Customer Phone</Label>
                 <Input
                   id="customerPhone"
+                  name="customerPhone"
                   type="tel"
                   value={formData.customerPhone}
                   onChange={(e) => setFormData(prev => ({ ...prev, customerPhone: e.target.value }))}
@@ -110,6 +144,7 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
                 <Label htmlFor="date">Invoice Date *</Label>
                 <Input
                   id="date"
+                  name="date"
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
@@ -121,6 +156,7 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
                 <Label htmlFor="dueDate">Due Date</Label>
                 <Input
                   id="dueDate"
+                  name="dueDate"
                   type="date"
                   value={formData.dueDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
@@ -129,8 +165,12 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
+                  name="status"
+                >
+                  <SelectTrigger id="status" name="status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -151,27 +191,32 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
                   Add Service
                 </Button>
               </div>
-
               <div className="space-y-3">
                 {formData.services.map((service, index) => (
                   <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
                     <div className="md:col-span-2 space-y-2">
-                      <Label>Service Name</Label>
+                      <Label htmlFor={`serviceName-${index}`}>Service Name</Label>
                       <Input
+                        id={`serviceName-${index}`}
+                        name={`serviceName-${index}`}
                         value={service.name}
                         onChange={(e) => updateService(index, "name", e.target.value)}
                         placeholder="Enter service name"
+                        required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Price</Label>
+                      <Label htmlFor={`servicePrice-${index}`}>Price</Label>
                       <div className="flex space-x-2">
                         <Input
+                          id={`servicePrice-${index}`}
+                          name={`servicePrice-${index}`}
                           type="number"
                           step="0.01"
                           value={service.price}
                           onChange={(e) => updateService(index, "price", parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
+                          required
                         />
                         {formData.services.length > 1 && (
                           <Button
@@ -195,12 +240,12 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900">Pricing</h3>
-                
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="discount">Discount (%)</Label>
                     <Input
                       id="discount"
+                      name="discount"
                       type="number"
                       step="0.1"
                       value={formData.discount}
@@ -208,11 +253,11 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
                       placeholder="0"
                     />
                   </div>
-                  
                   <div className="space-y-2">
                     <Label htmlFor="taxRate">Tax Rate (%)</Label>
                     <Input
                       id="taxRate"
+                      name="taxRate"
                       type="number"
                       step="0.1"
                       value={formData.taxRate}
@@ -222,10 +267,8 @@ const InvoiceForm = ({ invoice, onClose }: InvoiceFormProps) => {
                   </div>
                 </div>
               </div>
-
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900">Summary</h3>
-                
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>

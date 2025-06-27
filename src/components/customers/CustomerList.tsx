@@ -1,66 +1,36 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Gift, Heart, Phone, Mail } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
+
+export interface Customer {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  birthday?: string;
+  anniversary?: string;
+  status?: string;
+  totalVisits?: number;
+  totalSpent?: number;
+  lastVisit?: string;
+}
 
 interface CustomerListProps {
   searchTerm: string;
-  onEditCustomer: (customer: unknown) => void;
+  onEditCustomer: (customer: Customer) => void;
 }
 
 const CustomerList = ({ searchTerm, onEditCustomer }: CustomerListProps) => {
-  const customers = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.johnson@email.com",
-      phone: "+1 (555) 123-4567",
-      birthday: "1990-12-28",
-      anniversary: "2018-06-15",
-      totalVisits: 24,
-      totalSpent: 1850,
-      lastVisit: "2024-12-15",
-      status: "active"
-    },
-    {
-      id: 2,
-      name: "Emily Chen",
-      email: "emily.chen@email.com",
-      phone: "+1 (555) 987-6543",
-      birthday: "1985-01-05",
-      anniversary: null,
-      totalVisits: 12,
-      totalSpent: 920,
-      lastVisit: "2024-12-10",
-      status: "active"
-    },
-    {
-      id: 3,
-      name: "Mike Davis",
-      email: "mike.davis@email.com",
-      phone: "+1 (555) 456-7890",
-      birthday: "1992-03-22",
-      anniversary: "2020-01-02",
-      totalVisits: 18,
-      totalSpent: 1340,
-      lastVisit: "2024-12-08",
-      status: "active"
-    },
-    {
-      id: 4,
-      name: "Jessica Brown",
-      email: "jessica.brown@email.com",
-      phone: "+1 (555) 321-0987",
-      birthday: "1988-07-14",
-      anniversary: null,
-      totalVisits: 31,
-      totalSpent: 2650,
-      lastVisit: "2024-12-20",
-      status: "vip"
-    }
-  ];
+  const [customers, setCustomers] = useState<Customer[]>([]);
+
+  useEffect(() => {
+    fetch('http://localhost:4000/api/customers')
+      .then(res => res.json())
+      .then(setCustomers);
+  }, []);
 
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

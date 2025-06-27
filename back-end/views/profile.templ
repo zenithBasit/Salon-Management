@@ -1,0 +1,51 @@
+
+// views/profile.templ
+package views
+
+import "database/sql"
+
+type OwnerProfile struct {
+    ID        int
+    Name      sql.NullString
+    Email     string
+    Phone     sql.NullString
+    SalonName sql.NullString
+    Address   sql.NullString
+}
+
+
+templ ProfilePage(owner OwnerProfile) {
+    @Layout("My Profile") {
+        <h1 class="text-3xl font-bold mb-6">Salon Profile</h1>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <form hx-post="/profile" hx-target="#update-message" hx-swap="innerHTML">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-gray-700">Your Name</label>
+                        <input type="text" name="name" value={ owner.Name.String } class="p-2 border rounded w-full mt-1"/>
+                    </div>
+                     <div>
+                        <label class="block text-gray-700">Salon Name</label>
+                        <input type="text" name="salonName" value={ owner.SalonName.String } class="p-2 border rounded w-full mt-1"/>
+                    </div>
+                     <div>
+                        <label class="block text-gray-700">Contact Phone</label>
+                        <input type="text" name="phone" value={ owner.Phone.String } class="p-2 border rounded w-full mt-1"/>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Salon Address</label>
+                        <input type="text" name="address" value={ owner.Address.String } class="p-2 border rounded w-full mt-1"/>
+                    </div>
+                     <div>
+                        <label class="block text-gray-700">Email Address (cannot be changed)</label>
+                        <input type="email" name="email" value={ owner.Email } class="p-2 border rounded w-full mt-1 bg-gray-200" readonly/>
+                    </div>
+                </div>
+                 <button type="submit" class="mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+					Save Changes
+				</button>
+                 <div id="update-message" class="mt-4"></div>
+            </form>
+        </div>
+    }
+}

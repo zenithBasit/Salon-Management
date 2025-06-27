@@ -1,0 +1,45 @@
+
+// views/layout.templ
+// This is the base layout for all pages, written using the templ library syntax.
+// It includes the header, navigation, and sets up HTMX and Tailwind CSS.
+package views
+
+templ Layout(title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-M-^J"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title } | Salon Manager</title>
+			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+			<script src="https://cdn.tailwindcss.com"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+			<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+		</head>
+		<body class="bg-slate-100">
+			<div class="flex h-screen">
+				<!-- Sidebar -->
+				<aside class="w-64 bg-gray-800 text-white flex flex-col">
+					<div class="p-4 text-2xl font-bold border-b border-gray-700">
+						<i class="fas fa-cut mr-2"></i> SalonPro
+					</div>
+					<nav class="flex-grow">
+						<a href="/dashboard" class="block py-3 px-4 hover:bg-gray-700"><i class="fas fa-tachometer-alt mr-2 w-6"></i>Dashboard</a>
+						<a href="/customers" class="block py-3 px-4 hover:bg-gray-700"><i class="fas fa-users mr-2 w-6"></i>Customers</a>
+						<a href="/invoices" class="block py-3 px-4 hover:bg-gray-700"><i class="fas fa-file-invoice-dollar mr-2 w-6"></i>Invoices</a>
+						<a href="/reports" class="block py-3 px-4 hover:bg-gray-700"><i class="fas fa-chart-line mr-2 w-6"></i>Reports</a>
+						<a href="/settings" class="block py-3 px-4 hover:bg-gray-700"><i class="fas fa-cogs mr-2 w-6"></i>Settings</a>
+					</nav>
+					<div class="p-4 border-t border-gray-700">
+						<a href="/profile" class="block py-2 px-4 hover:bg-gray-700"><i class="fas fa-user-circle mr-2 w-6"></i>Profile</a>
+						<a href="/logout" class="block py-2 px-4 text-red-400 hover:bg-red-500 hover:text-white"><i class="fas fa-sign-out-alt mr-2 w-6"></i>Logout</a>
+					</div>
+				</aside>
+				<!-- Main Content -->
+				<main class="flex-1 p-8 overflow-y-auto">
+					{ children... }
+				</main>
+			</div>
+		</body>
+	</html>
+}

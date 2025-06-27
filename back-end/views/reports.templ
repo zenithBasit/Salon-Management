@@ -1,0 +1,112 @@
+
+// views/reports.templ
+package views
+
+import "fmt"
+
+type ReportRow struct {
+    Label string
+    Value float64
+}
+
+templ ReportsPage() {
+    @Layout("Reports & Analytics") {
+        <h1 class="text-3xl font-bold mb-6">Reports & Analytics</h1>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">Generate a Report</h2>
+            <form 
+                hx-post="/reports/generate"
+                hx-target="#report-results"
+            >
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="report_type" class="block text-sm font-medium text-gray-700">Report Type</label>
+                        <select name="report_type" id="report_type" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            <option value="revenue">Monthly Revenue</option>
+                            <option value="top_customers">Top Paying Customers</option>
+                        </select>
+                    </div>
+                    <div>
+                         <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                         <input type="date" name="start_date" id="start_date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
+                    </div>
+                    <div>
+                         <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                         <input type="date" name="end_date" id="end_date" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md"/>
+                    </div>
+                    <div class="flex items-end">
+                         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded w-full">Generate</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="report-results" class="bg-white p-6 rounded-lg shadow-md min-h-[300px]">
+            <!-- Report content will be loaded here by HTMX -->
+            <p class="text-gray-500">Select your report criteria and click "Generate" to see the results.</p>
+        </div>
+    }
+}
+
+templ ReportResults(reportName string, data []ReportRow) {
+    <h2 class="text-2xl font-bold mb-4 capitalize">{ reportName } Report</h2>
+    <div class="grid grid-cols-2 gap-8">
+        <div>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b">
+                        <th class="p-2">Item</th>
+                        <th class="p-2">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                for _, row := range data {
+                    <tr class="border-b">
+                        <td class="p-2">{ row.Label }</td>
+                        <td class="p-2">₹{ fmt.Sprintf("%.2f", row.Value) }</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <canvas id="reportChart"></canvas>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const ctx = document.getElementById('reportChart');
+            if(ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [
+                            for _, row := range data {
+                                `{ row.Label }`,
+                            }
+                        ],
+                        datasets: [{
+                            label: 'Report Data',
+                            data: [
+                                for _, row := range data {
+                                    `{ fmt.Sprintf("%.2f", row.Value) }`,
+                                }
+                            ],
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+}

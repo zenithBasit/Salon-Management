@@ -1,12 +1,19 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Mail, Lock, Building, MapPin } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { Scissors, Mail, Phone, MapPin, Building } from "lucide-react";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth"; // Correct import
+import { useNavigate } from "react-router-dom";
 
 interface AuthFormProps {
   onAuthSuccess: () => void;
@@ -14,16 +21,55 @@ interface AuthFormProps {
 
 const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    salonName: "",
+    address: "",
+  });
+
+  const navigate = useNavigate(); // Hook to navigate
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      // Store JWT in localStorage
+      localStorage.setItem("jwt", data.token);
+
+      toast({
+        title: "Login Successful",
+        description: "You have successfully logged in.",
+      });
+
       setIsLoading(false);
-      toast({ title: "Welcome back!", description: "Successfully logged in to your salon dashboard." });
-      onAuthSuccess();
-    }, 1500);
+      onAuthSuccess(); // Call onAuthSuccess to update auth state
+      navigate("/dashboard"); // Redirect to dashboard
+    } catch (error: any) {
+      setIsLoading(false);
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid credentials.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -70,10 +116,13 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="Enter your email"
                         className="pl-10"
                         required
+                        value={formData.email}
+                        onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
                       />
                     </div>
                   </div>
@@ -81,9 +130,12 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                     <Label htmlFor="password">Password</Label>
                     <Input
                       id="password"
+                      name="password"
                       type="password"
                       placeholder="Enter your password"
                       required
+                      value={formData.password}
+                      onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
@@ -110,6 +162,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="regEmail"
+                        name="regEmail"
                         type="email"
                         placeholder="john@salon.com"
                         className="pl-10"
@@ -123,6 +176,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                       <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="phone"
+                        name="phone"
                         type="tel"
                         placeholder="+1 (555) 123-4567"
                         className="pl-10"
@@ -136,6 +190,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                       <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="salonName"
+                        name="salonName"
                         placeholder="Elegant Hair Studio"
                         className="pl-10"
                         required
@@ -148,6 +203,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                       <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="address"
+                        name="address"
                         placeholder="123 Main St, City, State"
                         className="pl-10"
                         required
@@ -158,6 +214,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                     <Label htmlFor="regPassword">Password</Label>
                     <Input
                       id="regPassword"
+                      name="regPassword"
                       type="password"
                       placeholder="Create a strong password"
                       required
