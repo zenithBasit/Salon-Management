@@ -10,30 +10,30 @@ import (
 )
 
 // ShowDashboard displays the main dashboard with key metrics.
-func ShowDashboard(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserIDKey).(int)
-	db := database.GetDB()
+// func ShowDashboard(w http.ResponseWriter, r *http.Request) {
+// 	userID := r.Context().Value(UserIDKey).(int)
+// 	db := database.GetDB()
 
-	var totalCustomers, totalInvoices int
-	var totalRevenue float64
+// 	var totalCustomers, totalInvoices int
+// 	var totalRevenue float64
 
-	// Get total customers
-	db.QueryRow("SELECT COUNT(*) FROM customers WHERE owner_id = ?", userID).Scan(&totalCustomers)
+// 	// Get total customers
+// 	db.QueryRow("SELECT COUNT(*) FROM customers WHERE owner_id = ?", userID).Scan(&totalCustomers)
 
-	// Get total invoices
-	db.QueryRow("SELECT COUNT(*) FROM invoices WHERE owner_id = ?", userID).Scan(&totalInvoices)
+// 	// Get total invoices
+// 	db.QueryRow("SELECT COUNT(*) FROM invoices WHERE owner_id = ?", userID).Scan(&totalInvoices)
 
-	// Get total revenue
-	db.QueryRow("SELECT SUM(total_amount) FROM invoices WHERE owner_id = ?", userID).Scan(&totalRevenue)
+// 	// Get total revenue
+// 	db.QueryRow("SELECT SUM(total_amount) FROM invoices WHERE owner_id = ?", userID).Scan(&totalRevenue)
 
-	stats := views.DashboardStats{
-		TotalCustomers: totalCustomers,
-		TotalInvoices:  totalInvoices,
-		TotalRevenue:   totalRevenue,
-	}
+// 	stats := views.DashboardStats{
+// 		TotalCustomers: totalCustomers,
+// 		TotalInvoices:  totalInvoices,
+// 		TotalRevenue:   totalRevenue,
+// 	}
 
-	views.DashboardPage(stats).Render(r.Context(), w)
-}
+// 	views.DashboardPage(stats).Render(r.Context(), w)
+// }
 
 // APIDashboardStats returns the dashboard statistics as JSON for API requests.
 func APIDashboardStats(w http.ResponseWriter, r *http.Request) {

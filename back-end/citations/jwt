@@ -1,0 +1,14 @@
+# Code Citations
+
+## License: unknown
+https://github.com/atadzan/zero-app/tree/0490adcf987c5a84cdb230b367447ca55373e4e7/rpc/auth/internal/logic/helpers.go
+
+```
+: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims
+```
+

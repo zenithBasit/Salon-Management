@@ -9,7 +9,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, Building, MapPin } from "lucide-react";
+import { Mail, Lock, Building, MapPin, Phone, Scissors } from "lucide-react"; // Fix missing icons
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth"; // Correct import
@@ -19,11 +19,28 @@ interface AuthFormProps {
   onAuthSuccess: () => void;
 }
 
+interface AuthFormState {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  regEmail: string;
+  regPassword: string;
+  phone: string;
+  salonName: string;
+  address: string;
+}
+
 const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<AuthFormState>({
     email: "",
     password: "",
+    firstName: "",
+    lastName: "",
+    regEmail: "",
+    regPassword: "",
+    phone: "",
     salonName: "",
     address: "",
   });
@@ -36,51 +53,55 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
     try {
       const response = await fetch("/api/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
         }),
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      // Store JWT in localStorage
+      if (!response.ok) throw new Error(data.message || "Login failed");
       localStorage.setItem("jwt", data.token);
-
-      toast({
-        title: "Login Successful",
-        description: "You have successfully logged in.",
-      });
-
+      toast({ title: "Login Successful", description: "You have successfully logged in." });
       setIsLoading(false);
-      onAuthSuccess(); // Call onAuthSuccess to update auth state
-      navigate("/dashboard"); // Redirect to dashboard
-    } catch (error: any) {
+      onAuthSuccess();
+      navigate("/dashboard");
+    } catch (error) {
       setIsLoading(false);
-      toast({
-        title: "Login Failed",
-        description: error.message || "Invalid credentials.",
-        variant: "destructive",
-      });
+      const errMsg = error instanceof Error ? error.message : "Unknown error";
+      toast({ title: "Login Failed", description: errMsg || "Invalid credentials.", variant: "destructive" });
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.regEmail,
+          phone: formData.phone,
+          salon_name: formData.salonName,
+          address: formData.address,
+          password: formData.regPassword,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Registration failed");
+      localStorage.setItem("jwt", data.token);
       toast({ title: "Registration successful!", description: "Your salon account has been created." });
+      setIsLoading(false);
       onAuthSuccess();
-    }, 2000);
+      navigate("/dashboard");
+    } catch (error) {
+      setIsLoading(false);
+      const errMsg = error instanceof Error ? error.message : "Could not register.";
+      toast({ title: "Registration Failed", description: errMsg, variant: "destructive" });
+    }
   };
 
   return (
@@ -149,11 +170,25 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" placeholder="John" required />
+                      <Input
+                        id="firstName"
+                        name="firstName"
+                        placeholder="John"
+                        required
+                        value={formData.firstName}
+                        onChange={e => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" placeholder="Doe" required />
+                      <Input
+                        id="lastName"
+                        name="lastName"
+                        placeholder="Doe"
+                        required
+                        value={formData.lastName}
+                        onChange={e => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -167,6 +202,8 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                         placeholder="john@salon.com"
                         className="pl-10"
                         required
+                        value={formData.regEmail}
+                        onChange={e => setFormData(prev => ({ ...prev, regEmail: e.target.value }))}
                       />
                     </div>
                   </div>
@@ -181,6 +218,8 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                         placeholder="+1 (555) 123-4567"
                         className="pl-10"
                         required
+                        value={formData.phone}
+                        onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                       />
                     </div>
                   </div>
@@ -194,6 +233,8 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                         placeholder="Elegant Hair Studio"
                         className="pl-10"
                         required
+                        value={formData.salonName}
+                        onChange={e => setFormData(prev => ({ ...prev, salonName: e.target.value }))}
                       />
                     </div>
                   </div>
@@ -207,6 +248,8 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                         placeholder="123 Main St, City, State"
                         className="pl-10"
                         required
+                        value={formData.address}
+                        onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
                       />
                     </div>
                   </div>
@@ -218,6 +261,8 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                       type="password"
                       placeholder="Create a strong password"
                       required
+                      value={formData.regPassword}
+                      onChange={e => setFormData(prev => ({ ...prev, regPassword: e.target.value }))}
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>

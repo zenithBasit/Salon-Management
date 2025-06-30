@@ -1,9 +1,7 @@
-// internal/handlers/auth_handlers.go
-// Handles user registration, login, logout, and the authentication middleware.
 package handlers
 
 import (
-	"database/sql"
+	"encoding/json"
 	"net/http"
 	"os"
 	"regexp"
@@ -16,30 +14,45 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"salon-management/internal/database"
-	"salon-management/views"
 )
 
 var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 type Claims struct {
-	UserID int
+	UserID int64  `json:"user_id"`
+	Email  string `json:"email"`
 	jwt.RegisteredClaims
 }
 
-// ShowRegisterPage renders the registration form.
-func ShowRegisterPage(w http.ResponseWriter, r *http.Request) {
-	views.RegisterPage().Render(r.Context(), w)
+type RegisterRequest struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone"`
+	SalonName string `json:"salon_name"`
+	Address   string `json:"address"`
+	Password  string `json:"password"`
+}
+
+type RegisterResponse struct {
+	Token   string `json:"token,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // Register handles new salon owner creation.
 func Register(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	name := strings.TrimSpace(r.FormValue("name"))
-	phone := strings.TrimSpace(r.FormValue("phone"))
-	address := strings.TrimSpace(r.FormValue("address"))
-	email := strings.TrimSpace(r.FormValue("email"))
-	password := r.FormValue("password")
-	salonName := strings.TrimSpace(r.FormValue("salonName"))
+	var req RegisterRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(RegisterResponse{Message: "Invalid request"})
+		return
+	}
+	name := strings.TrimSpace(req.FirstName + " " + req.LastName)
+	phone := strings.TrimSpace(req.Phone)
+	address := strings.TrimSpace(req.Address)
+	email := strings.TrimSpace(req.Email)
+	password := req.Password
+	salonName := strings.TrimSpace(req.SalonName)
 
 	// Validation
 	if name == "" || email == "" || password == "" || salonName == "" {
@@ -62,7 +75,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Address is too long (max 200 characters)", http.StatusBadRequest)
 		return
 	}
-	// Phone: E.164 format, starts with +, 10-15 digits, country code required
 	phoneRegex := regexp.MustCompile(`^\+[1-9]\d{9,14}$`)
 	if !phoneRegex.MatchString(phone) {
 		http.Error(w, "Phone must be in international format (e.g. +12345678901)", http.StatusBadRequest)
@@ -101,106 +113,69 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db := database.GetDB()
-	_, err = db.Exec(`
-		INSERT INTO owners (name, phone, address, email, password_hash, salon_name, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`, name, phone, address, email, string(hashedPassword), salonName, time.Now(), time.Now())
-
+	res, err := db.Exec(`
+        INSERT INTO owners (name, phone, address, email, password_hash, salon_name, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		name, phone, address, email, string(hashedPassword), salonName, time.Now(), time.Now())
 	if err != nil {
 		http.Error(w, "Email already exists.", http.StatusBadRequest)
 		return
 	}
+	id, _ := res.LastInsertId()
 
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	token, err := generateJWT(id, email)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(RegisterResponse{Message: "Could not generate token"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(RegisterResponse{Token: token})
 }
 
-// ShowLoginPage renders the login form.
-func ShowLoginPage(w http.ResponseWriter, r *http.Request) {
-	views.LoginPage().Render(r.Context(), w)
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	Token   string `json:"token,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // Login handles user authentication.
 func Login(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	if email == "" || password == "" {
-		http.Error(w, "Email and password required", http.StatusBadRequest)
+	var req LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(LoginResponse{Message: "Invalid request"})
 		return
 	}
-	if _, err := mail.ParseAddress(email); err != nil {
-		http.Error(w, "Invalid email", http.StatusBadRequest)
+	user, err := database.GetUserByEmail(req.Email)
+	if err != nil || !user.CheckPassword(req.Password) {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(LoginResponse{Message: "Invalid email or password"})
 		return
 	}
-
-	var ownerID int
-	var storedPasswordHash string
-
-	db := database.GetDB()
-	err := db.QueryRow("SELECT id, password_hash FROM owners WHERE email = ?", email).Scan(&ownerID, &storedPasswordHash)
+	token, err := generateJWT(user.ID, user.Email)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
-			return
-		}
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(LoginResponse{Message: "Could not generate token"})
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(LoginResponse{Token: token})
+}
 
-	err = bcrypt.CompareHashAndPassword([]byte(storedPasswordHash), []byte(password))
-	if err != nil {
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
-		return
-	}
-
-	expirationTime := time.Now().Add(24 * time.Hour)
+func generateJWT(userID int64, email string) (string, error) {
 	claims := &Claims{
-		UserID: ownerID,
+		UserID: userID,
+		Email:  email,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
-	if err != nil {
-		http.Error(w, "Server error, unable to create token", http.StatusInternalServerError)
-		return
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: expirationTime,
-		Path:    "/",
-	})
-
-	// Set HX-Redirect header for HTMX
-	w.Header().Set("HX-Redirect", "/dashboard")
-	w.WriteHeader(http.StatusOK)
-}
-
-// Logout clears the authentication cookie.
-func Logout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   "",
-		Expires: time.Now().Add(-1 * time.Hour), // Expire in the past
-		Path:    "/",
-	})
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
-}
-
-func AdminOnly(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userID := r.Context().Value(UserIDKey).(int)
-		db := database.GetDB()
-		var role string
-		err := db.QueryRow("SELECT role FROM owners WHERE id = ?", userID).Scan(&role)
-		if err != nil || role != "admin" {
-			http.Error(w, "Forbidden", http.StatusForbidden)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
+	return token.SignedString(jwtKey)
 }

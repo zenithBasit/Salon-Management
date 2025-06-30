@@ -5,26 +5,27 @@ package handlers
 import (
 	"net/http"
 	"salon-management/internal/database"
-	"salon-management/views"
+
+	// "salon-management/views"
 	"time"
 )
 
 // ShowProfilePage displays the salon owner's profile for editing.
-func ShowProfilePage(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserIDKey).(int)
-	db := database.GetDB()
+// func ShowProfilePage(w http.ResponseWriter, r *http.Request) {
+// 	userID := r.Context().Value(UserIDKey).(int)
+// 	db := database.GetDB()
 
-	var owner views.OwnerProfile
-	err := db.QueryRow("SELECT id, name, email, phone, salon_name, address FROM owners WHERE id = ?", userID).Scan(
-		&owner.ID, &owner.Name, &owner.Email, &owner.Phone, &owner.SalonName, &owner.Address)
+// 	var owner views.OwnerProfile
+// 	err := db.QueryRow("SELECT id, name, email, phone, salon_name, address FROM owners WHERE id = ?", userID).Scan(
+// 		&owner.ID, &owner.Name, &owner.Email, &owner.Phone, &owner.SalonName, &owner.Address)
 
-	if err != nil {
-		http.Error(w, "Could not load profile", http.StatusInternalServerError)
-		return
-	}
+// 	if err != nil {
+// 		http.Error(w, "Could not load profile", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	views.ProfilePage(owner).Render(r.Context(), w)
-}
+// 	views.ProfilePage(owner).Render(r.Context(), w)
+// }
 
 // UpdateProfile handles the form submission for updating the profile.
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {

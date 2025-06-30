@@ -27,7 +27,11 @@ const CustomerList = ({ searchTerm, onEditCustomer }: CustomerListProps) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/customers')
+    fetch("/api/customers", {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("jwt")}`,
+      }
+    })
       .then(res => res.json())
       .then(setCustomers);
   }, []);

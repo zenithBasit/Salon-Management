@@ -44,6 +44,7 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3" // SQLite driver
+	"golang.org/x/crypto/bcrypt"
 )
 
 var db *sql.DB
@@ -155,4 +156,21 @@ func BackupDB() error {
 	defer dst.Close()
 	_, err = io.Copy(dst, src)
 	return err
+}
+
+type User struct {
+	ID           int64
+	Email        string
+	PasswordHash string
+}
+
+func GetUserByEmail(email string) (User, error) {
+	row := db.QueryRow("SELECT id, email, password_hash FROM owners WHERE email = ?", email)
+	var user User
+	err := row.Scan(&user.ID, &user.Email, &user.PasswordHash)
+	return user, err
+}
+
+func (u *User) CheckPassword(password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) == nil
 }

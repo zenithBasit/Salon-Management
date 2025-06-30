@@ -55,38 +55,18 @@ const Dashboard = () => {
   )
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/dashboard")
-      .then((res) => res.json())
-      .then((data) => {
+    fetch("/api/dashboard", {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("jwt")}`,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
         setStats([
-          {
-            title: "Total Customers",
-            value: data.totalCustomers,
-            change: "+12%",
-            icon: Users,
-            trend: "up",
-          },
-          {
-            title: "Monthly Revenue",
-            value: `$${data.monthlyRevenue}`,
-            change: "+8%",
-            icon: DollarSign,
-            trend: "up",
-          },
-          {
-            title: "Total Invoices",
-            value: data.totalInvoices,
-            change: "+18%",
-            icon: FileText,
-            trend: "up",
-          },
-          {
-            title: "Growth Rate",
-            value: data.growthRate,
-            change: "+5%",
-            icon: TrendingUp,
-            trend: "up",
-          },
+          { title: "Total Customers", value: data.totalCustomers, change: "+12%", icon: Users, trend: "up" },
+          { title: "Monthly Revenue", value: `$${data.monthlyRevenue}`, change: "+8%", icon: DollarSign, trend: "up" },
+          { title: "Total Invoices", value: data.totalInvoices, change: "+18%", icon: FileText, trend: "up" },
+          { title: "Growth Rate", value: data.growthRate, change: "+5%", icon: TrendingUp, trend: "up" },
         ])
       })
   }, [])

@@ -110,52 +110,62 @@ func main() {
 	r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
 
 	// --- Public Routes (No Authentication Required) ---
-	r.Get("/", handlers.ShowLoginPage)
-	r.Get("/login", handlers.ShowLoginPage)
-	r.Post("/login", handlers.Login)
-	r.Get("/register", handlers.ShowRegisterPage)
-	r.Post("/register", handlers.Register)
-	r.Get("/logout", handlers.Logout)
+	// r.Get("/", handlers.ShowLoginPage)
+	// r.Get("/login", handlers.ShowLoginPage)
+	r.Post("/api/login", handlers.Login)
+	// r.Get("/register", handlers.ShowRegisterPage)
+	r.Post("/api/register", handlers.Register)
+	// r.Get("/api/logout", handlers.Logout)
+
+	// http.HandleFunc("/api/login", handlers.Login)
+	// http.HandleFunc("/api/register", handlers.Register)
 
 	// --- Authenticated Routes (Protected Group) ---
 	r.Group(func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware) // Apply authentication middleware
 
 		// Dashboard
-		r.Get("/dashboard", handlers.ShowDashboard)
+		// r.Get("/dashboard", handlers.ShowDashboard)
+		r.Get("/api/dashboard", handlers.APIDashboardStats)
 
 		// Profile Management
-		r.Get("/profile", handlers.ShowProfilePage)
+		// r.Get("/profile", handlers.ShowProfilePage)
 		r.Post("/profile", handlers.UpdateProfile)
 
 		// Customer Management
-		r.Get("/customers", handlers.ShowCustomersPage)
-		r.Post("/customers", handlers.AddCustomer)
-		r.Get("/customers/{id}", handlers.GetCustomer) // For editing
-		r.Put("/customers/{id}", handlers.UpdateCustomer)
-		r.Delete("/customers/{id}", handlers.DeleteCustomer)
-		r.Get("/customers/search", handlers.SearchCustomers)
+		// r.Get("/customers", handlers.ShowCustomersPage)
+		// r.Post("/customers", handlers.AddCustomer)
+		// r.Get("/customers/{id}", handlers.GetCustomer) // For editing
+		// r.Put("/customers/{id}", handlers.UpdateCustomer)
+		// r.Delete("/customers/{id}", handlers.DeleteCustomer)
+		// r.Get("/customers/search", handlers.SearchCustomers)
 
-		// Invoice Management
-		r.Get("/invoices", handlers.ShowInvoicesPage)
-		r.Get("/invoices/new", handlers.ShowNewInvoicePage)
+		// // Invoice Management
+		// r.Get("/invoices", handlers.ShowInvoicesPage)
+		// r.Get("/invoices/new", handlers.ShowNewInvoicePage)
 		r.Post("/invoices", handlers.CreateInvoice)
-		r.Get("/invoices/{id}", handlers.GetInvoiceDetails)
+		// r.Get("/invoices/{id}", handlers.GetInvoiceDetails)
 
 		// Reporting
-		r.Get("/reports", handlers.ShowReportsPage)
-		r.Post("/reports/generate", handlers.GenerateReport)
+		// r.Get("/reports", handlers.ShowReportsPage)
+		// r.Post("/reports/generate", handlers.GenerateReport)
 
-		// Settings for reminders
-		r.Get("/settings", handlers.ShowSettingsPage)
+		// // Settings for reminders
+		// r.Get("/settings", handlers.ShowSettingsPage)
 		r.Post("/settings/reminders", handlers.UpdateReminderTemplate)
 
 		// Only admins can access sensitive reports
-		r.With(handlers.AdminOnly).Get("/admin/reports", handlers.ShowAdminReports)
+		// r.With(handlers.AdminOnly).Get("/admin/reports", handlers.ShowAdminReports)
+
+		// --- API Routes ---
+		r.Get("/api/customers", handlers.APIGetCustomers)
+		r.Post("/api/customers", handlers.APIAddCustomer)
+		r.Delete("/api/customers/{id}", handlers.APIDeleteCustomer)
+		// Add PUT for update if needed
 	})
 
 	// Start the server
-	port := ":8080"
+	port := ":8081"
 	if envPort := os.Getenv("PORT"); envPort != "" {
 		port = ":" + envPort
 	}
