@@ -32,16 +32,42 @@ const CustomerForm = ({ customer, onClose }: CustomerFormProps) => {
     notes: customer?.notes || "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // Add this block to send the POST request
+  const response = await fetch("/api/customers", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localStorage.getItem("jwt")}`,
+    },
+    body: JSON.stringify({
+      name: formData.name,
+      phone: formData.phone,
+      email: formData.email,
+      birthday: formData.birthday,
+      anniversary: formData.anniversary,
+    }),
+  });
+
+  if (response.ok) {
     toast({
       title: customer ? "Customer updated" : "Customer created",
-      description: customer ? 
-        "Customer information has been updated successfully." : 
-        "New customer has been added to the system.",
+      description: customer
+        ? "Customer information has been updated successfully."
+        : "New customer has been added to the system.",
     });
     onClose();
-  };
+  } else {
+    const data = await response.json();
+    toast({
+      title: "Error",
+      description: data.message || "Failed to add customer.",
+      variant: "destructive",
+    });
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

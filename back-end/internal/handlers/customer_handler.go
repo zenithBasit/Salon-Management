@@ -76,9 +76,20 @@ func decryptField(ciphertext []byte) (string, error) {
 	return string(plain), nil
 }
 
+
 // --- API: List Customers ---
 func APIGetCustomers(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserIDKey).(int)
+		userID := r.Context().Value(UserIDKey)
+	// var id int
+	switch v := userID.(type) {
+	case int:
+		id = v
+	case int64:
+		id = int(v)
+	default:
+		http.Error(w, "Invalid user ID type", http.StatusInternalServerError)
+		return
+	}
 	db := database.GetDB()
 	rows, err := db.Query("SELECT id, name, phone, email, birthday, anniversary FROM customers WHERE owner_id = ?", userID)
 	if err != nil {
@@ -123,7 +134,17 @@ func APIGetCustomers(w http.ResponseWriter, r *http.Request) {
 
 // --- API: Add Customer ---
 func APIAddCustomer(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserIDKey).(int)
+	userID := r.Context().Value(UserIDKey)
+	// var id int
+	switch v := userID.(type) {
+	case int:
+		id = v
+	case int64:
+		id = int(v)
+	default:
+		http.Error(w, "Invalid user ID type", http.StatusInternalServerError)
+		return
+	}
 	var c struct {
 		Name        string `json:"name"`
 		Phone       string `json:"phone"`
@@ -190,7 +211,17 @@ func APIAddCustomer(w http.ResponseWriter, r *http.Request) {
 
 // --- API: Update Customer ---
 func APIUpdateCustomer(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserIDKey).(int)
+	userID := r.Context().Value(UserIDKey)
+	// var id int
+	switch v := userID.(type) {
+	case int:
+		id = v
+	case int64:
+		id = int(v)
+	default:
+		http.Error(w, "Invalid user ID type", http.StatusInternalServerError)
+		return
+	}
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -261,7 +292,17 @@ func APIUpdateCustomer(w http.ResponseWriter, r *http.Request) {
 
 // --- API: Delete Customer ---
 func APIDeleteCustomer(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserIDKey).(int)
+	userID := r.Context().Value(UserIDKey)
+	// var id int
+	switch v := userID.(type) {
+	case int:
+		id = v
+	case int64:
+		id = int(v)
+	default:
+		http.Error(w, "Invalid user ID type", http.StatusInternalServerError)
+		return
+	}
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -279,7 +320,17 @@ func APIDeleteCustomer(w http.ResponseWriter, r *http.Request) {
 
 // --- API: Get Single Customer ---
 func APIGetCustomer(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserIDKey).(int)
+	userID := r.Context().Value(UserIDKey)
+	// var id int
+	switch v := userID.(type) {
+	case int:
+		id = v
+	case int64:
+		id = int(v)
+	default:
+		http.Error(w, "Invalid user ID type", http.StatusInternalServerError)
+		return
+	}
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {

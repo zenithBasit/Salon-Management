@@ -84,10 +84,20 @@ import (
 
 // 	views.NewInvoicePage(customers, services).Render(r.Context(), w)
 // }
-
+var id int
 // CreateInvoice handles the submission of a new invoice.
 func CreateInvoice(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserIDKey).(int)
+	userID := r.Context().Value(UserIDKey)
+	// var id int
+	switch v := userID.(type) {
+	case int:
+		id = v
+	case int64:
+		id = int(v)
+	default:
+		http.Error(w, "Invalid user ID type", http.StatusInternalServerError)
+		return
+	}
 	db := database.GetDB()
 
 	// Simplified for this example. A real implementation would parse services,

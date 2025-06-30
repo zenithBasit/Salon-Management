@@ -37,15 +37,25 @@ import (
 
 // APIDashboardStats returns the dashboard statistics as JSON for API requests.
 func APIDashboardStats(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(UserIDKey).(int)
+	userID := r.Context().Value(UserIDKey)
+	var id int
+	switch v := userID.(type) {
+	case int:
+		id = v
+	case int64:
+		id = int(v)
+	default:
+		http.Error(w, "Invalid user ID type", http.StatusInternalServerError)
+		return
+	}
 	db := database.GetDB()
 
 	var totalCustomers, totalInvoices int
 	var totalRevenue float64
 
-	db.QueryRow("SELECT COUNT(*) FROM customers WHERE owner_id = ?", userID).Scan(&totalCustomers)
-	db.QueryRow("SELECT COUNT(*) FROM invoices WHERE owner_id = ?", userID).Scan(&totalInvoices)
-	db.QueryRow("SELECT SUM(total_amount) FROM invoices WHERE owner_id = ?", userID).Scan(&totalRevenue)
+	db.QueryRow("SELECT COUNT(*) FROM customers WHERE owner_id = ?", id).Scan(&totalCustomers)
+	db.QueryRow("SELECT COUNT(*) FROM invoices WHERE owner_id = ?", id).Scan(&totalInvoices)
+	db.QueryRow("SELECT SUM(total_amount) FROM invoices WHERE owner_id = ?", id).Scan(&totalRevenue)
 
 	// Dummy growth rate for now
 	resp := map[string]interface{}{
