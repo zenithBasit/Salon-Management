@@ -6,7 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 
 export interface Customer {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -19,22 +19,13 @@ export interface Customer {
 }
 
 interface CustomerListProps {
+  customers: Customer[];
   searchTerm: string;
   onEditCustomer: (customer: Customer) => void;
+  refreshCustomers: () => void;
 }
 
-const CustomerList = ({ searchTerm, onEditCustomer }: CustomerListProps) => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-
-  useEffect(() => {
-    fetch("/api/customers", {
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("jwt")}`,
-      }
-    })
-      .then(res => res.json())
-      .then(setCustomers);
-  }, []);
+const CustomerList = ({ customers, searchTerm, onEditCustomer, refreshCustomers }: CustomerListProps) => {
 
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -42,11 +33,30 @@ const CustomerList = ({ searchTerm, onEditCustomer }: CustomerListProps) => {
     customer.phone.includes(searchTerm)
   );
 
-  const handleDeleteCustomer = (customerId: number) => {
-    toast({
-      title: "Customer deleted",
-      description: "Customer has been removed from the system.",
+  const handleDeleteCustomer = async (customerId: string) => {
+    if (!window.confirm("Are you sure you want to delete this customer?")) return;
+
+    const response = await fetch(`/api/customers/${customerId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("jwt")}`,
+      },
     });
+
+    if (response.ok) {
+      toast({
+        title: "Customer deleted",
+        description: "Customer has been removed from the system.",
+      });
+      refreshCustomers();
+    } else {
+      const data = await response.json();
+      toast({
+        title: "Error",
+        description: data.message || "Failed to delete customer.",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -87,7 +97,7 @@ const CustomerList = ({ searchTerm, onEditCustomer }: CustomerListProps) => {
                     <h3 className="text-lg font-semibold text-gray-900">{customer.name}</h3>
                     {getStatusBadge(customer.status)}
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-600">
                     <div className="flex items-center space-x-2">
                       <Mail className="h-4 w-4" />

@@ -1,5 +1,5 @@
 import type { Customer } from "./CustomerList";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,23 @@ const CustomerManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
 
+    // Fetch customers from API
+  const fetchCustomers = useCallback(() => {
+    fetch("/api/customers", {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("jwt")}`,
+      },
+    })
+      .then(res => res.json())
+      .then(setCustomers);
+  }, []);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
+  
   const handleAddCustomer = () => {
     setEditingCustomer(null);
     setShowForm(true);
@@ -22,9 +38,11 @@ const CustomerManagement = () => {
     setShowForm(true);
   };
 
-  const handleFormClose = () => {
+  // Called after add/edit, closes form and refreshes list
+  const handleFormClose = (shouldRefresh = false) => {
     setShowForm(false);
     setEditingCustomer(null);
+    if (shouldRefresh) fetchCustomers();
   };
 
   return (
@@ -66,6 +84,8 @@ const CustomerManagement = () => {
       <CustomerList 
         searchTerm={searchTerm} 
         onEditCustomer={handleEditCustomer}
+        customers={customers}
+        refreshCustomers={fetchCustomers}
       />
 
       {/* Customer Form Modal */}
@@ -73,6 +93,7 @@ const CustomerManagement = () => {
         <CustomerForm
           customer={editingCustomer}
           onClose={handleFormClose}
+          refreshCustomers={fetchCustomers}
         />
       )}
     </div>

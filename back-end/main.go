@@ -160,6 +160,7 @@ func main() {
 		// --- API Routes ---
 		r.Get("/api/customers", handlers.APIGetCustomers)
 		r.Post("/api/customers", handlers.APIAddCustomer)
+		r.Put("/api/customers/{id}", handlers.APIUpdateCustomer)
 		r.Delete("/api/customers/{id}", handlers.APIDeleteCustomer)
 		// Add PUT for update if needed
 	})
